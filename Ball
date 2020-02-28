@@ -1,0 +1,203 @@
+// @author Rolejnd
+// @version 12
+//
+#include "TXLib.h"
+
+//��������� ������
+
+void DrawBall (double x, double  y, double r, COLORREF color);
+
+// ��������� ������ � ����������t� (������)
+
+void Physics(double x, double y, double vx, double vy, double ax, double ay, double dt);
+
+// �������� ������
+
+void MoveBall(double x1, double y1, double vx , double vy , double r1, double ax , double ay ,
+              double x2, double y2, double vx2, double vy2, double r2, double ax2, double ay2,
+              double x3, double y3, double vx3, double vy3, double r3, double ax3, double ay3,
+              double x4, double y4, double vx4, double vy4, double r4, double ax4, double ay4,
+              double dt, COLORREF color1, COLORREF color2, COLORREF color3, COLORREF color4);
+
+//-----------------------------------------------------------------------------
+
+//����� �1 ��� ������
+
+void GroundTwoBall(double x1, double y1, double r1, double x2, double y2, double r2, double vx, double vy, double ax, double ay);
+
+//-----------------------------------------------------------------------------
+
+void Text(char* TextEnd);
+
+//-----------------------------------------------------------------------------
+
+double Distance(double x1, double y1,
+                double x2, double y2);
+
+//-----------------------------------------------------------------------------
+
+void ControlPlayer2(double vx2, double vy2, double ax2, double ay2, double dt);
+
+//-----------------------------------------------------------------------------
+
+int main()
+    {
+    txCreateWindow (800, 600);
+    MoveBall(100, 120, 1,  1, 25, 2, 3,
+             102, 300, 2,  2, 30, 2, 3,
+             500, 500, 2,  2, 35, 2, 4,
+             300, 400, 8,  9, 3 , 2, 3,
+             1, TX_BLUE, TX_RED, TX_GREEN, TX_YELLOW);
+
+    }
+
+//-----------------------------------------------------------------------------
+
+void ControlPlayer1(double* vx, double* vy, double ax, double ay, double dt)
+    {
+    if (txGetAsyncKeyState(VK_LEFT))
+        {
+        *vx = (*vx) - ax * dt;
+        }
+    if (txGetAsyncKeyState(VK_RIGHT))
+        {
+        *vx = (*vx) + ax * dt;
+        }
+    if (txGetAsyncKeyState(VK_DOWN))
+        {
+        *vy = (*vy) - ay * dt;
+        }
+    if (txGetAsyncKeyState(VK_UP))
+        {
+        *vy = (*vy) + ay * dt;
+        }
+    if (txGetAsyncKeyState(VK_SPACE))
+        {
+        *vx = 0;
+        *vy = 0;
+        }
+    }
+
+//-----------------------------------------------------------------------------
+
+void ControlPlayer2(double* vx2, double* vy2, double ax2, double ay2, double dt)
+    {
+    if (txGetAsyncKeyState('a') or txGetAsyncKeyState('A'))
+        {
+        *vx2 = (*vx2) - ax2 * dt;
+        }
+    if (txGetAsyncKeyState('d') or txGetAsyncKeyState('D'))
+        {
+        *vx2 = (*vx2) + ax2 * dt;
+        }
+    if (txGetAsyncKeyState('w') or txGetAsyncKeyState('W'))
+        {
+        *vy2 = (*vy2) + ay2 * dt;
+        }
+    if (txGetAsyncKeyState('s') or txGetAsyncKeyState('S'))
+        {
+        *vy2 = (*vy2) - ay2 * dt;
+        }
+    if (txGetAsyncKeyState(VK_SPACE))
+        {
+        *vx2 = 0;
+        *vy2 = 0;
+        }
+    }
+
+//-----------------------------------------------------------------------------
+
+void DrawBall(double x, double  y, double r, COLORREF color)
+    {
+    txSetColor (TX_WHITE);
+    txSetFillColor (color);
+    txCircle (x, y, r);
+    }
+
+//-----------------------------------------------------------------------------
+
+void Physics(double* x, double* y, double* vx, double* vy, double r, double ax, double ay, double dt)
+    {
+    if (*x > 800 - r || *x < 0 + r)
+        {
+        *vx = - (*vx);
+        }
+    if (*y > 600 - r || *y < 0 + r)
+        {
+        *vy = - (*vy);
+        }
+    *x += (*vx) * dt;
+    *y += (*vy) * dt;
+    }
+
+//-----------------------------------------------------------------------------
+
+void MoveBall(double x1, double y1, double vx , double vy , double r1, double ax , double ay ,
+              double x2, double y2, double vx2, double vy2, double r2, double ax2, double ay2,
+              double x3, double y3, double vx3, double vy3, double r3, double ax3, double ay3,
+              double x4, double y4, double vx4, double vy4, double r4, double ax4, double ay4,
+              double dt, COLORREF color1, COLORREF color2, COLORREF color3, COLORREF color4)
+    {
+    while (! (txGetAsyncKeyState(VK_ESCAPE)))
+        {
+        Physics (&x1, &y1, &vx,  &vy,  r1, ax,  ay,  dt);
+        ControlPlayer1(&vx, &vy, ax, ay, dt);
+        DrawBall (x1, y1, r1, TX_BLUE);
+        Physics (&x2, &y2, &vx2, &vy2, r2, ax2, ay2, dt);
+        ControlPlayer2(&vx2, &vy2, ax2, ay2, dt);
+        DrawBall (x2, y2, r2, TX_RED);
+        txSleep(5);
+        Physics (&x3, &y3, &vx3, &vy3, r3, ax3, ay3, dt);
+        DrawBall (x3, y3, r3, TX_GREEN);
+        Physics (&x4, &y4, &vx4, &vy4, r4, ax4, ay4, dt);
+        DrawBall (x4, y4, r4, TX_YELLOW);
+        double dist12 = Distance(x1, y1, x2, y2);   //������������ �������
+        double dist13 = Distance(x1, y1, x3, y3);   //������������ ������� ������ � �������
+        double dist23 = Distance(x2, y2, x3, y3);   //������������ ������� ������ � �������
+        double dist24 = Distance(x2, y2, x4, y4);
+        double dist14 = Distance(x1, y1, x3, y3);
+        if (dist12 <= (r1 + r2) && (vx*vx + vy*vy > vx2*vx2 + vy2*vy2))  //������� �������� ������� ������
+            {
+            Text("WIN 2");
+            break;
+            }
+        if (dist12 <= (r1 + r2) && (vx*vx + vy*vy < vx2*vx2 + vy2*vy2))  //������� �������� ������� ������
+            {
+            Text("WIN 1");
+            break;
+            }
+        if (dist13 <= (r3 + r1))
+            {
+            Text("Winner player 2, lose player 1");
+            break;
+            }
+        if (dist24 <= (r4 + r2))
+            {
+            Text("Winner player 2, lose player 1");
+            break;
+            }
+        if (dist14 <= (r4 + r1))
+            {
+            Text("Winner player 1, lose player 2");
+            break;
+            }
+        }
+    }
+//-----------------------------------------------------------------------------
+//������ ���������� ����� ��������
+double Distance(double x1, double y1, double x2, double y2)
+    {
+    double dist = sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+    return dist;
+    }
+//-----------------------------------------------------------------------------
+//������� �����
+
+void Text(char* TextEnd)
+    {
+    txSetColor (TX_WHITE);
+    txSelectFont ("Times New Roman", 50, 6, 2,"italic");
+    txSetFillColor (TX_GREEN);
+    int xtext = 300, ytext = 270;
+    txTextOut (xtext, ytext, TextEnd);
+    }
